@@ -4,36 +4,52 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Dealer;
+use App\Models\Customers;
+
 
 
 class DealerController extends Controller
 {
     public function store(Request $request)
     {
-        try{
-$validatedData = $request->validate([
+        // Validate the request data
+        $validatedData = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'brand_id' => 'required|exists:brands,id',
             'units' => 'required|integer',
             'vehicle_number' => 'required|string',
         ]);
-
-        $dealer = Dealer::create($validatedData);
-
+    
+        // Retrieve the customer details
+        $customer = Customers::findOrFail($validatedData['customer_id']);
+    
+        // Create the dealer instance and assign the validated data
+        $dealer = new Dealer;
+        $dealer->customer_id = $validatedData['customer_id'];
+        $dealer->brand_id = $validatedData['brand_id'];
+        $dealer->units = $validatedData['units'];
+        $dealer->vehicle_number = $validatedData['vehicle_number'];
+    
+        // Save the dealer instance
+        $dealer->save();
+    
+        // Return a JSON response with the created dealer data and customer name
         return response()->json([
-        'message' => 'Dealer created successfully',
-         'data' => $dealer], 201);
-
-     } catch (\Exception $e) {
-        return response()->json([
-            'status' => 500,
-            'error' => 'Internal server error: ' . $e->getMessage(), $e,
-        ], 500);
+            'status' => 200,
+            'message' => 'Dealer created successfully',
+            'dealer' => [
+                'customer_name' => $customer->customerName,
+                'customer_id' => $dealer->customer_id,
+                'brand_id' => $dealer->brand_id,
+                'units' => $dealer->units,
+                'vehicle_number' => $dealer->vehicle_number
+            ]
+        ], 200);
     }
-}
 
 public function index(Request $req){
     $dealer = Dealer::all();
+   
 
     if($dealer->count()>0){
 
