@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+
 use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -130,4 +130,92 @@ class AdminController extends Controller
         }
        
     }
+
+    public function delete(Request $req) {
+        try {
+            $admin = Admin::find($req->id);
+            if (!$admin) {
+                return response()->json([
+                    'status' => 404,
+                    'error' => 'Brand not found'
+                ], 404);
+            }
+    
+            $admin->delete();
+    
+            return response()->json([
+                'status' => 200,
+                'message' => 'admin deleted successfully',
+                'admin' => $admin
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'error' => 'Internal server error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function update(Request $req, $id) {
+        try {
+            // Find the brand by ID
+            $admin = Admin::findOrFail($id);
+    
+            // Validate the request data
+            $req->validate([
+                'company_name' => 'required',
+                'super_admin_id' => 'required',
+                'user_name' => 'required',
+                'email' => 'required',
+                'mobile' => 'required',
+                'password' => 'required',
+                'usertype' => 'required'
+            ]);
+    
+            // Update the brand with the provided data
+            $admin->update([
+                'company_name' => $req->company_name,
+                'super_admin_id' => $req->super_admin_id,
+                'user_name' => $req->user_name,
+                'email' => $req->email,
+                'mobile' => $req->mobile,
+                'password' => $req->password,
+                'usertype' => $req->usertype,
+            ]);
+    
+            // Return a success response
+            return response()->json([
+                'status' => 200,
+                'message' => 'Admin/Company updated successfully',
+                'brand' => $admin
+            ], 200);
+        } catch (\Exception $e) {
+            // Return an error response if any exception occurs
+            return response()->json([
+                'status' => 500,
+                'error' => 'Internal server error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function show($id)
+    {
+        try {
+            // Retrieve the user from the database
+            $admin = Admin::findOrFail($id);
+
+            // Return JSON response with the user
+            return response()->json([
+                'status' => 200,
+                'admin' => $admin
+            ], 200);
+        } catch (\Exception $e) {
+            // Handle exceptions (e.g., user not found)
+            return response()->json([
+                'status' => 404,
+                'error' => 'brand not found'
+            ], 404);
+        }
+    }
+
 }

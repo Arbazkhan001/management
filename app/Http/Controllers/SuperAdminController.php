@@ -74,6 +74,81 @@ class SuperAdminController extends Controller
             ], 500);
         }
     }
+
+    public function delete(Request $req) {
+        try {
+            $superAdmin = SuperAdmin::find($req->id);
+            if (!$superAdmin) {
+                return response()->json([
+                    'status' => 404,
+                    'error' => 'superAdmin not found'
+                ], 404);
+            }
+    
+            $superAdmin->delete();
+    
+            return response()->json([
+                'status' => 200,
+                'message' => 'superAdmin deleted successfully',
+                'superAdmin' => $superAdmin
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'error' => 'Internal server error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    
+    public function index(Request $req){
+        try {
+            // Attempt to retrieve all SuperAdmin
+            $superAdmin = SuperAdmin::all();
+    
+            // Check if any SuperAdmin were found
+            if($superAdmin->count() > 0){
+                // Return JSON response with SuperAdmin if found
+                return response()->json([
+                    'status' => 200,
+                    'superAdmin' => $superAdmin
+                ], 200);
+            } else {
+                // Return JSON response indicating no records found
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No records found'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            // Return JSON response for any exceptions
+            return response()->json([
+                'status' => 500,
+                'error' => 'Internal server error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function show($id)
+    {
+        try {
+            // Retrieve the user from the database
+            $superAdmin = SuperAdmin::findOrFail($id);
+
+            // Return JSON response with the user
+            return response()->json([
+                'status' => 200,
+                'superAdmin' => $superAdmin
+            ], 200);
+        } catch (\Exception $e) {
+            // Handle exceptions (e.g., user not found)
+            return response()->json([
+                'status' => 404,
+                'error' => 'brand not found'
+            ], 404);
+        }
+    }
     
     
 }
