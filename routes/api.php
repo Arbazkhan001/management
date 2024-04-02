@@ -6,6 +6,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DealerController;
+use App\Http\Controllers\SuperAdminController;
 
 
 
@@ -46,6 +47,13 @@ Route::post('/adddealer', [DealerController::class, 'store']);
 Route::delete('/deleteDealer/{id}', [DealerController::class, 'delete']);
 Route::post('/editdealer/{id}', [DealerController::class, 'update']);
 Route::get('/dealer/{id}', [DealerController::class, 'show']);
+
+
+Route::post('/superAdmin', [SuperAdminController::class, 'createSuperAdmin']);
+Route::post('/admin/register', [AdminController::class, 'createUser']);
+Route::post('/admin/login', [AdminController::class, 'loginUser']);
+Route::post('/editSuperAdmin/{id}', [SuperAdminController::class, 'update']);
+
 
 
 

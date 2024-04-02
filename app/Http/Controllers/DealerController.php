@@ -12,39 +12,60 @@ class DealerController extends Controller
 {
     public function store(Request $request)
     {
-        // Validate the request data
-        $validatedData = $request->validate([
-            'customer_id' => 'required|exists:customers,id',
-            'brand_id' => 'required|exists:brands,id',
-            'units' => 'required|integer',
-            'vehicle_number' => 'required|string',
-        ]);
+        try {
+            // Validate the request data
+            $validatedData = $request->validate([
+                'customer_id' => 'required|exists:customers,id',
+                'brand_id' => 'required|exists:brands,id',
+                'units' => 'required|integer',
+                'vehicle_number' => 'required|string',
+            ]);
     
-        // Retrieve the customer details
-        $customer = Customers::findOrFail($validatedData['customer_id']);
+            // Check if the customer ID exists in the customers table
+            if (!Customers::where('id', $validatedData['customer_id'])->exists()) {
+                throw ValidationException::withMessages([
+                    'customer_id' => ['The selected customer ID is invalid.'],
+                ]);
+            }
     
-        // Create the dealer instance and assign the validated data
-        $dealer = new Dealer;
-        $dealer->customer_id = $validatedData['customer_id'];
-        $dealer->brand_id = $validatedData['brand_id'];
-        $dealer->units = $validatedData['units'];
-        $dealer->vehicle_number = $validatedData['vehicle_number'];
+            // Retrieve the customer details
+            $customer = Customers::findOrFail($validatedData['customer_id']);
     
-        // Save the dealer instance
-        $dealer->save();
+            // Create the dealer instance and assign the validated data
+            $dealer = new Dealer;
+            $dealer->customer_id = $validatedData['customer_id'];
+            $dealer->brand_id = $validatedData['brand_id'];
+            $dealer->units = $validatedData['units'];
+            $dealer->vehicle_number = $validatedData['vehicle_number'];
     
-        // Return a JSON response with the created dealer data and customer name
-        return response()->json([
-            'status' => 200,
-            'message' => 'Dealer created successfully',
-            'dealer' => [
-                'customer_name' => $customer->customerName,
-                'customer_id' => $dealer->customer_id,
-                'brand_id' => $dealer->brand_id,
-                'units' => $dealer->units,
-                'vehicle_number' => $dealer->vehicle_number
-            ]
-        ], 200);
+            // Save the dealer instance
+            $dealer->save();
+    
+            // Return a JSON response with the created dealer data and customer name
+            return response()->json([
+                'status' => 200,
+                'message' => 'Dealer created successfully',
+                'dealer' => [
+                    'customer_name' => $customer->customerName,
+                    'customer_id' => $dealer->customer_id,
+                    'brand_id' => $dealer->brand_id,
+                    'units' => $dealer->units,
+                    'vehicle_number' => $dealer->vehicle_number
+                ]
+            ], 200);
+        } catch (ValidationException $e) {
+            // Return validation error response
+            return response()->json([
+                'status' => 422,
+                'error' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            // Return generic error response
+            return response()->json([
+                'status' => 500,
+                'error' => 'Internal server error: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
 public function index(Request $req){
